@@ -1,0 +1,18 @@
+Concept Decomposition of images/cow.jpg: 
+	cow	0.1842
+	dairy	0.0321
+	calf	0.0252
+	pasture	0.0176
+	steer	0.0166
+	schwarz	0.0152
+	milk	0.0146
+	farm	0.0145
+	raised	0.0126
+	properly	0.0096
+	traditional	0.0087
+	halter	0.0057
+	flavorful	0.0053
+	shaker	0.0023
+	livestock	0.0
+Decomposition L0 Norm: 	15.0
+CLIP, SpLiCE Cosine Sim: 	0.5702
