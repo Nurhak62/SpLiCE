@@ -75,7 +75,7 @@ def load(name: str, vocabulary: str, vocabulary_size: int = -1, device = "cuda" 
     """
     if ":" not in name:
         raise RuntimeError("Please define your CLIP backbone with the syntax \'[library]:[model]\'")
-
+    print("a1")
     library, model_name = name.split(":")
     if library in SUPPORTED_MODELS.keys():
         if model_name in SUPPORTED_MODELS[library]:
@@ -93,35 +93,42 @@ def load(name: str, vocabulary: str, vocabulary_size: int = -1, device = "cuda" 
             raise RuntimeError(f"Model type {model_name} not supported. Try manual construction instead.")
     else:
         raise RuntimeError(f"Library {name} not supported. Try manual construction instead.")
-    
+    print("a2")
     if vocabulary in SUPPORTED_VOCAB:
         concepts = []
         vocab = []
-
+        print("a3")
         vocab_path = _download(GITHUB_HOST_LINK + "vocab/" + vocabulary + ".txt", download_root or os.path.expanduser("~/.cache/splice/"), "vocab")
-
+        print("a4")
         concept_root = download_root or os.path.expanduser("~/.cache/splice/")
+        print("a5")
         os.makedirs(os.path.join(concept_root, "embeddings"), exist_ok=True)
-
+        print("a6")
         if vocabulary_size <= 0:
             vocabulary_size_name = "full"
         else:
             vocabulary_size_name = vocabulary_size
+        print("a7")
         concept_path = os.path.join(concept_root, f"embeddings/{name}_{vocabulary}_{vocabulary_size_name}_embeddings.pt")
-
+        print("a8")
         if os.path.isfile(concept_path):
             concepts = torch.load(concept_path, map_location=torch.device(device))
+            print("a9")
         else:
             with open(vocab_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
                 if vocabulary_size > 0:
                     lines = lines[-vocabulary_size:]
+                print("len(lines): " + str(len(lines)))
                 for line in lines:
                     line = line.strip()
                     vocab.append(line)
                     tokens = tokenizer(line).to(device)
+                    print("Tokenized: " + line)
+                    print("a10")
                     with torch.no_grad():
                         concept_embedding = clip_backbone.encode_text(tokens)
+                        print("a11")
                     concepts.append(concept_embedding)
             
             concepts = torch.nn.functional.normalize(torch.stack(concepts).squeeze(), dim=1)
@@ -130,10 +137,15 @@ def load(name: str, vocabulary: str, vocabulary_size: int = -1, device = "cuda" 
     else:
         raise RuntimeError(f"Vocabulary {vocabulary} not supported.")
     
-    
+    print("a12")
     model_path = model_name.replace("/","-")
     mean_path = _download(GITHUB_HOST_LINK + "means/" + f"{library}_{model_path}_image.pt", download_root or os.path.expanduser("~/.cache/splice/"), "means")
+    
+    print("a13")
+
     image_mean = torch.load(mean_path, map_location=torch.device(device))
+
+    print("a14")
     splice = SPLICE(
         image_mean=image_mean,
         dictionary=concepts,
@@ -141,6 +153,7 @@ def load(name: str, vocabulary: str, vocabulary_size: int = -1, device = "cuda" 
         device=device,
         **kwargs
     )
+    print("a15")
 
     return splice
 
@@ -231,7 +244,7 @@ def get_preprocess(name: str):
                 return clip.load(model_name)[1]
             elif library == "open_clip":
                 import open_clip
-                return open_clip.create_model_and_transforms(model_name)[2]
+                return open_clip.create_model_and_transforms(model_name, pretrained='laion2b_s34b_b79k')[2]
             else:
                 raise RuntimeError("Only CLIP and Open CLIP supported at this time. Try manual construction instead.")
         else:

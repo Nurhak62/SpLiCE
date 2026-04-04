@@ -10,20 +10,23 @@ def main():
     parser.add_argument('-out_path', type=str)
     parser.add_argument('--verbose', action="store_true")
     parser.add_argument('-l1_penalty', type=float)
-    parser.add_argument('-device', type=str, default="cpu")
+    parser.add_argument('-device', type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument('-model', type=str, default="open_clip:ViT-B-32")
     parser.add_argument('-vocab', type=str, default="laion")
     parser.add_argument('-vocab_size', type=int, default=10000)
     args = parser.parse_args()
+    print("a")
 
     splicemodel = splice.load(args.model, args.vocab, args.vocab_size, args.device, l1_penalty = args.l1_penalty, return_weights=True)
+    print("b")
     preprocess = splice.get_preprocess(args.model)
+    print("c")
     img = preprocess(Image.open(args.path)).to(args.device).unsqueeze(0)
-
+    print("d")
     weights, l0_norm, cosine = splice.decompose_image(img, splicemodel, args.device)
-
+    print("e")
     vocab = splice.get_vocabulary(args.vocab, args.vocab_size)
-
+    print("f")
     _, indices = torch.sort(weights, descending=True)
 
     outpath = args.out_path + os.path.split(args.path)[-1].split(".")[0] + "_weights.txt"

@@ -244,6 +244,10 @@ def load(dataset, preprocess, data_path, train=False):
     elif dataset == "Food101":
         dataset_test = Food101(data_path, split="test", download=download, transform=preprocess)
 
+    elif dataset == "ImageNet":
+        from torchvision.datasets import ImageFolder
+        dataset_test = ImageFolder(data_path, transform=preprocess)
+        
     elif dataset == "ImageNetVal":
         dataset_test = ImageNetValDataset(transform=preprocess, location=data_path)
 
