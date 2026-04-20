@@ -19,9 +19,6 @@ class CocoLogicDataset(Dataset):
     def __init__(
         self,
         json_path: str,
-        image_dir: Optional[str] = None,
-        transform: Optional[Callable] = None,
-        use_image: bool = False,
         use_logic_augmented_features: bool = False,
         use_rule_components: bool = False,
         use_clip_features: bool = False,
@@ -30,16 +27,10 @@ class CocoLogicDataset(Dataset):
         with open(json_path, "r") as f:
             data = json.load(f)
 
-        if use_image and image_dir is None:
-            raise ValueError("image_dir must be set when use_image=True")
-
-        self.use_image = use_image
         self.use_logic_augmented_features = use_logic_augmented_features
         self.use_rule_components = use_rule_components
         self.use_clip_features = use_clip_features
         self.debug = debug
-        self.image_dir = image_dir
-        self.transform = transform
         self.clip_features_dir = None
         if self.use_clip_features:
             if 'train' in json_path:
@@ -87,8 +78,9 @@ class CocoLogicDataset(Dataset):
         for rule_idx in range(10):
             # If the list is non-empty, at least one positive component matched
             if rule_idx < len(rule_components) and len(rule_components[rule_idx]) > 0:
-                component_features[rule_idx] = 1.0
+                component_features[rule_idx] = rule_components[rule_idx][0] 
         return component_features
+        #TODO es soll nicht auf 1.0 gesetzt werden sondern der Wert aus rule_component genommen werden
 
     # def augment_logic_features(self, counts_tensor):
     #     """
@@ -281,6 +273,9 @@ class CocoLogicDataset(Dataset):
         ])
 
         return torch.cat([counts_tensor, new_features], dim=0)
+    
+    def add_logic_to_clip(self, clip_concepts):
+        pass
 
     def __getitem__(self, idx: int):
         item = self.items[idx]
@@ -298,12 +293,6 @@ class CocoLogicDataset(Dataset):
             # Append rule component features to the input
             categories = torch.cat([categories, rule_comp_features], dim=0)
 
-        if self.use_image:
-            image_path = os.path.join(self.image_dir, item["file_name"])
-            image = Image.open(image_path).convert("RGB")
-            if self.transform is not None:
-                image = self.transform(image)
-            return image, categories, labels
 
         return categories, labels
 

@@ -39,7 +39,6 @@ class MLPRulePredictor(nn.Module):
 def build_dataloader(json_path, batch_size, shuffle=True, num_workers=1, use_logic_augmented_features=False, use_rule_components=False, use_clip_features=False, debug=False):
     dataset = CocoLogicDataset(
         json_path=json_path,
-        use_image=False,
         use_logic_augmented_features=use_logic_augmented_features,
         use_rule_components=use_rule_components,
         use_clip_features=use_clip_features,
@@ -115,7 +114,7 @@ def train(
     
     # 1. Class Weights berechnen und in die Loss-Funktion einbauen
     pos_weights = compute_class_weights(train_loader, device)
-    criterion = nn.BCEWithLogitsLoss() #pos_weight=pos_weights)
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weights)
     
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -150,14 +149,14 @@ def train(
                 categories = categories.to(device)
                 labels = labels.to(device)
                 outputs = model(categories)
-                if counter < 2:
-                    print(outputs.mean().item())
-                    counter += 1
+                # if counter < 2:
+                #     print(outputs.mean().item())
+                #     counter += 1
                 loss = criterion(outputs, labels)
                 val_loss += loss.item() * categories.size(0)
                 
                 # Sammeln für Balanced Accuracy
-                predictions = (outputs >= 0.0).float() # Äquivalent zu sigmoid(outputs) >= 0.5
+                predictions = (outputs >= 0.0).float() # Äquivalent zu sigmoid(outputs) >= 0.5 # > 0.5
                 all_preds.append(predictions)
                 all_labels.append(labels)
 
@@ -184,7 +183,6 @@ def train(
             balanced_accs.append(b_acc.item())
             
         # 3. Geometric Mean über alle Balanced Accuracies
-        # (Um log(0) zu vermeiden, fügen wir ein winziges Epsilon 1e-8 hinzu)
         b_accs_arr = np.array(balanced_accs)
         geom_mean = np.exp(np.mean(np.log(np.clip(b_accs_arr, 1e-8, 1.0)))) * 100.0
 

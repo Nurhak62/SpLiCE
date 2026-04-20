@@ -72,7 +72,6 @@ def compute_balanced_geom_mean_acc(outputs, labels, num_classes=10):
 def build_dataloader(json_path, batch_size, shuffle=True, num_workers=1, use_logic_augmented_features=False, use_rule_components=False, use_clip_features=False, debug=False):
     dataset = CocoLogicDataset(
         json_path=json_path,
-        use_image=False,
         use_logic_augmented_features=use_logic_augmented_features,
         use_rule_components=use_rule_components,
         use_clip_features=use_clip_features,

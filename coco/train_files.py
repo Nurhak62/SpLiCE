@@ -124,7 +124,7 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Load CLIP model
-    model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='openai') # TODO: switch to 'laion2b_s34b_b79k' when available
+    model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k') # TODO: switch to 'laion2b_s34b_b79k' when available
     model = model.to(device)
     model.eval()
     tokenizer = open_clip.get_tokenizer('ViT-B-32')
